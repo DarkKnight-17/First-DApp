@@ -177,7 +177,13 @@ function generateKeyPair(bits = 8) {
     const q = generatePrime(bits);
     const n = p * q;
     const phi = (p - 1) * (q - 1);
-    const e = 3;  // Общепринятое значение для e
+    let e = 3; // Общепринятое значение для e
+    for(let i = 3; ; i += 2) {
+        if(isPrime(i) && phi % i != 0 && gcd(i, phi) === 1) {
+            e = i;
+            break;
+        }
+    }
     const d = modinv(e, phi);
     return [{ e, n }, { d, n }];
 }
@@ -223,7 +229,7 @@ function rsaVerify(message, signature, publicKey) {
     const { e, n } = publicKey;
     const hashedMessage = hashCode(message);
     const decryptedSignature = BigInt(signature) ** BigInt(e) % BigInt(n);
-    return hashedMessage === decryptedSignature;
+    return hashedMessage.toString() === decryptedSignature.toString();
 }
 /* 
 // Пример использования
