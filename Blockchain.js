@@ -172,12 +172,12 @@ function modinv(a, m) {
 }
 
 // Функция для генерации пары ключей RSA
-function generateKeyPair(bits = 1024) {
+function generateKeyPair(bits = 8) {
     const p = generatePrime(bits);
     const q = generatePrime(bits);
     const n = p * q;
     const phi = (p - 1) * (q - 1);
-    const e = 65537;  // Общепринятое значение для e
+    const e = 3;  // Общепринятое значение для e
     const d = modinv(e, phi);
     return [{ e, n }, { d, n }];
 }
