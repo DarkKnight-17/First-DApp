@@ -1,4 +1,4 @@
-// Функция для проверки, является ли число простым
+
 
 const crypto = require('crypto')
 
@@ -139,7 +139,7 @@ while(isLaunched){
 
 }
     
-
+// Функция для проверки, является ли число простым
 function isPrime(num) {
     if (num <= 1) {
         return false;
