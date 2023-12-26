@@ -72,11 +72,23 @@ class Person{
         
     }
 
-    sendMessage(message, person){
-         let encoded = rsaEncrypt(message, person.pubKey);
-         
-         let signatureOfSender = rsaSign(message, this.privKey);
-         let isValid = rsaVerify(message, signatureOfSender, this.pubKey);
+    sendMessage(message, person , realSender = this){
+        let encoded = rsaEncrypt(message, person.pubKey);
+        
+        let signatureOfSender;
+        
+        
+        if (realSender !== this){
+            
+            signatureOfSender = rsaSign(message, realSender.privKey);  
+            
+        } else{
+            signatureOfSender = rsaSign(message, this.privKey); 
+        }
+            
+        let isValid = rsaVerify(message, signatureOfSender, this.pubKey);
+
+        
          if(isValid){
              console.log("Your email has been delivered!")
              let decodedText = rsaDecrypt(encoded, person.privKey)
@@ -86,7 +98,7 @@ class Person{
             const verifiedBlock = new Block(date.toLocaleString(), decodedText, blockChain.getLatestBlock().hash, this.name, person.name);
             blockChain.addBlock(verifiedBlock);
          }else{
-              console.log("The message was not sent");        
+              console.log("Failure, it is not allowed to send a message from another person");        
          }
 
         }
@@ -122,18 +134,30 @@ while(isLaunched){
     for (let user in users){
         console.log(`${user}`);
     }
-    let currentUser = rl.question('Enter who you are: ');
+    let currentUser = rl.question('Enter who you are among them: ');
     console.log(`Welcome back ${currentUser}!`);
     let receiver = rl.question('Whom do you want send a message? ');
     let email = rl.question('Enter your message: ');
+    let isFraud = rl.question('Would you like to send it from another person(It is not possible)?(yes/no): ')
    
+    if(isFraud === 'yes'){
+        let anotherPerson = rl.question('Enter his/her name: ');
+        users[currentUser].sendMessage(email, users[receiver], users[anotherPerson]);
+        console.log("");
+        console.log("The blockchain hasn't been updated")
+        console.log("");
+        
+    }else{
+        
+        users[currentUser].sendMessage(email, users[receiver]);
+        console.log("");
+        console.log("Here is the updated blockchain");
+        console.log("");
+   }
    
     
     
-    users[currentUser].sendMessage(email, users[receiver]);
-    console.log("");
-    console.log("Here is the updated blockchain");
-    
+   
     for(let block of blockChain.chain){
         if(blockChain.chain.indexOf(block) === 0){
             console.log("This is the genesis block");
