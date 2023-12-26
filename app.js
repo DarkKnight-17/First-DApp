@@ -1,6 +1,10 @@
 
 
+
 const crypto = require('crypto')
+
+
+const rl = require('readline-sync');
 
 
 
@@ -18,7 +22,7 @@ class Block{
     }
 
     getHash(){
-        return hashCode(this.data + this.timestamp + this.previousHash + this.data);
+        return hashCode(this.blockIndex.toString() + this.data + String(this.timestamp) + this.previousHash);
     }
 }
 
@@ -27,7 +31,8 @@ class Blockchain{
         this.chain = [this.createGenesisBlock()]
     }
     createGenesisBlock(){
-        return new Block( Date.toLocaleString(), "this is the first block", "0", "NoOne", "NoOne");
+        let currentDate = new Date();
+        return new Block( currentDate.toLocaleString(), "this is the first block", "0", "NoOne", "NoOne");
     }
     getLatestBlock(){
         return this.chain[this.chain.length-1];
@@ -60,7 +65,7 @@ const blockChain = new Blockchain();
 class Person{
     constructor(name, twoKeys){
         this.name = name;
-        const [privKey,pubKey ] = twoKeys;
+        const [pubKey,privKey ] = twoKeys;
         this.privKey = privKey;
         this.pubKey = pubKey;
         this.inbox = [];
@@ -74,14 +79,14 @@ class Person{
          let isValid = rsaVerify(message, signatureOfSender, this.pubKey);
          if(isValid){
              console.log("Your email has been delivered!")
-             decodedText = rsaDecrypt(encoded, person.privKey)
+             let decodedText = rsaDecrypt(encoded, person.privKey)
              person.inbox.push(decodedText);
              
             let date = new Date();
             const verifiedBlock = new Block(date.toLocaleString(), decodedText, blockChain.getLatestBlock().hash, this.name, person.name);
             blockChain.addBlock(verifiedBlock);
          }else{
-              console.log("The message was not send");        
+              console.log("The message was not sent");        
          }
 
         }
@@ -115,25 +120,39 @@ while(isLaunched){
     console.log("Here, you can send emails between a group of people");
     console.log("This is the list of our current users");
     for (let user in users){
-        console.log(`${user}}`);
+        console.log(`${user}`);
     }
-
-    let currentUser = prompt("Enter who you are:  ")
-    alert(`Welcome back ${currentUser}!`);
+    let currentUser = rl.question('Enter who you are: ');
+    console.log(`Welcome back ${currentUser}!`);
+    let receiver = rl.question('Whom do you want send a message? ');
+    let email = rl.question('Enter your message: ');
+   
+   
     
-    let receiver = prompt("Enter who you want to have a chat with:  ");
-    const email = prompt("What is your message: ");
     
-    
-    users[currentUser].sendmessage(email, users[receiver]);
+    users[currentUser].sendMessage(email, users[receiver]);
+    console.log("");
+    console.log("Here is the updated blockchain");
     
     for(let block of blockChain.chain){
-        console.log(block);
+        if(blockChain.chain.indexOf(block) === 0){
+            console.log("This is the genesis block");
+            console.log("");
+        }
+        console.log(`blockIndex: ${block.blockIndex}`);
+        console.log(`blockData: ${block.data}`);
+        console.log(`Sender: ${block.sender}`);
+        console.log(`Recepient: ${block.receiver}`);
+        console.log(`Timestamp: ${block.timestamp}`);
+        console.log(`block Hash: ${block.hash}`);
+        console.log(`Hash of the previous block: ${block.previousHash}`);
+        console.log("");
     }
-   let response = prompt("Would you like to continue?(yes/no): ");
-   if(response === "no"){
-    console.log("Okay, goodbuy!")
-    isLaunched = false;
+
+   let stayHere = rl.question('Continue having a chat?(yes/no) ');
+   if (stayHere === 'no'){
+       console.log('Okay, goodbye!');
+         isLaunched = false;
    }
        
 
@@ -220,14 +239,14 @@ function rsaDecrypt(cipherText, privateKey) {
 // Подписание сообщения с использованием закрытого ключа RSA
 function rsaSign(message, privateKey) {
     const { d, n } = privateKey;
-    const signature = BigInt(hashCode(message)) ** BigInt(d) % BigInt(n);
+    const signature = BigInt(hash(message)) ** BigInt(d) % BigInt(n);
     return signature;
 }
 
 // Проверка подписи сообщения с использованием открытого ключа RSA
 function rsaVerify(message, signature, publicKey) {
     const { e, n } = publicKey;
-    const hashedMessage = hashCode(message);
+    const hashedMessage = hash(message);
     const decryptedSignature = BigInt(signature) ** BigInt(e) % BigInt(n);
     return hashedMessage.toString() === decryptedSignature.toString();
 }
@@ -258,15 +277,32 @@ console.log("Подпись проверена:", isVerified);
 // Примечание: Функция hash должна быть заменена на безопасный алгоритм хеширования.
 
 
-function hashCode(input) {
-    // Create a hash object
-    const hash = crypto.createHash('sha256');
+function hash(data) {
+
+
+     
+    let checksum = 0;
  
-    // Pass the input data to the hash object
-    hash.update(input);
+    // Iterate through each character in the input
+    for (let i = 0; i < data.length; i++) {
+        // Add the ASCII value of 
+        //  the character to the checksum
+        checksum += data.charCodeAt(i);
+    }
  
-    // Get the output in hexadecimal format
-    return hash.digest('hex');
+    // Ensure the checksum is within 
+    //the range of 0-255 by using modulo
+    return checksum % 256;
+   
 }
 
-
+function hashCode(input){
+ 
+    const hash = crypto.createHash('sha256');
+ 
+    
+    hash.update(input);
+ 
+    
+    return hash.digest('hex');
+}
