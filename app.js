@@ -274,31 +274,7 @@ function rsaVerify(message, signature, publicKey) {
     const decryptedSignature = BigInt(signature) ** BigInt(e) % BigInt(n);
     return hashedMessage.toString() === decryptedSignature.toString();
 }
-/* 
-// Пример использования
-const [publicKey, privateKey] = generateKeyPair();
-const message = "Привет, RSA!";
-console.log("Исходное сообщение:", message);
 
-// Шифрование
-const cipherText = rsaEncrypt(message, publicKey);
-console.log("Зашифрованное сообщение:", cipherText);
-
-// Расшифровка
-const decryptedText = rsaDecrypt(cipherText, privateKey);
-console.log("Расшифрованное сообщение:", decryptedText);
-
-// Подписание
-const signature = rsaSign(message, privateKey);
-console.log("Цифровая подпись:", signature);
-
-// Проверка подписи
-const isVerified = rsaVerify(message, signature, publicKey);
-console.log("Подпись проверена:", isVerified); 
-
-*/
-
-// Примечание: Функция hash должна быть заменена на безопасный алгоритм хеширования.
 
 
 function hash(data) {
